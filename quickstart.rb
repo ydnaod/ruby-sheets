@@ -49,15 +49,28 @@ spreadsheet_id = "18zi9WL17Z94QdLoaCIVZLtoRXtoxj8O7bXqcfkkXu0s"
 range = "Sheet1!G1:H1"
 request_body = Google::Apis::SheetsV4::ValueRange.new
 request_body.range = range;
-request_body.values = [["Hello world", "Hello"]]
+request_body.values = [["First Name", "Last Name"]]
 response = service.update_spreadsheet_value spreadsheet_id, range, request_body, value_input_option: "USER_ENTERED"
 puts response
-# range = "Sheet1!A2:A30"
-# response = service.get_spreadsheet_values spreadsheet_id, range
-# puts "Name, Date:"
-# puts "No data found." if response.values.empty?
-# puts response.values
-# response.values.each do |row|
-#   # Print columns A and E, which correspond to indices 0 and 4.
-#   #puts "#{row[0]}, #{row[4]}"
-# end
+range = "Sheet1!A2:A"
+response = service.get_spreadsheet_values spreadsheet_id, range
+puts "Name, Date:"
+puts "No data found." if response.values.empty?
+#puts response.values
+response.values.each do |row|
+  # Split full name value into two values
+  full_name = row[0].split(", ")
+  first_name = full_name[1]
+  last_name = full_name[0]
+  index = response.values.index(row)
+  rowIndex = index + 2;
+
+  #Update columns
+  request_body2 = Google::Apis::SheetsV4::ValueRange.new
+  range2 = "Sheet1!G#{rowIndex}:H#{rowIndex}"
+  puts range2
+  request_body2.range = range2
+  request_body2.values = [[first_name, last_name]]
+  response2 = service.update_spreadsheet_value spreadsheet_id, range2, request_body2, value_input_option: "USER_ENTERED"
+  puts response2
+end

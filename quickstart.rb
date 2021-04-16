@@ -10,7 +10,7 @@ CREDENTIALS_PATH = "credentials.json".freeze
 # created automatically when the authorization flow completes for the first
 # time.
 TOKEN_PATH = "token.yaml".freeze
-SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS_READONLY
+SCOPE = Google::Apis::SheetsV4::AUTH_SPREADSHEETS
 
 ##
 # Ensure valid credentials, either by restoring from the saved credentials
@@ -44,11 +44,20 @@ service.authorization = authorize
 # Prints the names and majors of students in a sample spreadsheet:
 # https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
 spreadsheet_id = "18zi9WL17Z94QdLoaCIVZLtoRXtoxj8O7bXqcfkkXu0s"
-range = "Sheet1!A2:F"
-response = service.get_spreadsheet_values spreadsheet_id, range
-puts "Name, Date:"
-puts "No data found." if response.values.empty?
-response.values.each do |row|
-  # Print columns A and E, which correspond to indices 0 and 4.
-  puts "#{row[0]}, #{row[4]}"
-end
+
+#create columns for first name and last name
+range = "Sheet1!G1:H1"
+request_body = Google::Apis::SheetsV4::ValueRange.new
+request_body.range = range;
+request_body.values = [["Hello world", "Hello"]]
+response = service.update_spreadsheet_value spreadsheet_id, range, request_body, value_input_option: "USER_ENTERED"
+puts response
+# range = "Sheet1!A2:A30"
+# response = service.get_spreadsheet_values spreadsheet_id, range
+# puts "Name, Date:"
+# puts "No data found." if response.values.empty?
+# puts response.values
+# response.values.each do |row|
+#   # Print columns A and E, which correspond to indices 0 and 4.
+#   #puts "#{row[0]}, #{row[4]}"
+# end

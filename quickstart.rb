@@ -45,32 +45,61 @@ service.authorization = authorize
 # https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
 spreadsheet_id = "18zi9WL17Z94QdLoaCIVZLtoRXtoxj8O7bXqcfkkXu0s"
 
-#create columns for first name and last name
-range = "Sheet1!G1:H1"
-request_body = Google::Apis::SheetsV4::ValueRange.new
-request_body.range = range;
-request_body.values = [["First Name", "Last Name"]]
-response = service.update_spreadsheet_value spreadsheet_id, range, request_body, value_input_option: "USER_ENTERED"
-puts response
-range = "Sheet1!A2:A"
-response = service.get_spreadsheet_values spreadsheet_id, range
-puts "Name, Date:"
-puts "No data found." if response.values.empty?
-#puts response.values
-response.values.each do |row|
-  # Split full name value into two values
-  full_name = row[0].split(", ")
-  first_name = full_name[1]
-  last_name = full_name[0]
-  index = response.values.index(row)
-  rowIndex = index + 2;
+# #create columns for first name and last name
+# range = "Sheet1!G1:I1"
+# request_body = Google::Apis::SheetsV4::ValueRange.new
+# request_body.range = range;
+# request_body.values = [["First Name", "Last Name", "Velocify Status"]]
+# response = service.update_spreadsheet_value spreadsheet_id, range, request_body, value_input_option: "USER_ENTERED"
+# puts response
+# range = "Sheet1!A2:A"
+# response = service.get_spreadsheet_values spreadsheet_id, range
+# puts "Name, Date:"
+# puts "No data found." if response.values.empty?
+# #puts response.values
+# response.values.each do |row|
+#   # Split full name value into two values
+#   full_name = row[0].split(", ")
+#   first_name = full_name[1]
+#   last_name = full_name[0]
+#   index = response.values.index(row)
+#   rowIndex = index + 2;
 
   #Update columns
-  request_body2 = Google::Apis::SheetsV4::ValueRange.new
-  range2 = "Sheet1!G#{rowIndex}:H#{rowIndex}"
-  puts range2
-  request_body2.range = range2
-  request_body2.values = [[first_name, last_name]]
-  response2 = service.update_spreadsheet_value spreadsheet_id, range2, request_body2, value_input_option: "USER_ENTERED"
-  puts response2
+#   request_body2 = Google::Apis::SheetsV4::ValueRange.new
+#   range2 = "Sheet1!G#{rowIndex}:H#{rowIndex}"
+#   request_body2.range = range2
+#   request_body2.values = [[first_name, last_name]]
+#   response2 = service.update_spreadsheet_value spreadsheet_id, range2, request_body2, value_input_option: "USER_ENTERED"
+# end
+
+# Compare first and last name columns to Velocify Report
+
+# velocify
+velocify_spreadsheet_id = "11Y_L2Fkh05jZXeR5LSX3UWkgK9AfWF6vRTbQX9cegCA"
+velocify_range = "Sheet1!C2:D"
+velocify_response = service.get_spreadsheet_values velocify_spreadsheet_id, velocify_range
+
+#Freedom
+range = "Sheet1!G2:H"
+response = service.get_spreadsheet_values spreadsheet_id, range
+response.values.each do |row|
+    first_name = row[0]
+    last_name = row[1]
+    index = response.values.index(row)
+    rowIndex = index + 2;
+    #puts first_name + last_name
+    velocify_response.values.each do |row| 
+        row[0] = "" unless row[0]
+        row[1] = "" unless row[1]
+        if row[0].casecmp(first_name) && row[1].casecmp(last_name)
+            request_body2 = Google::Apis::SheetsV4::ValueRange.new
+            range2 = "Sheet1!I#{rowIndex}"
+            request_body2.range = range2
+            request_body2.values = [["Found!"]]
+            response2 = service.update_spreadsheet_value spreadsheet_id, range2, request_body2, value_input_option: "USER_ENTERED"
+            break
+        end
+        #puts row[0] + row[1]
+    end
 end

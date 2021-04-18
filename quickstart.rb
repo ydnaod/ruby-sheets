@@ -45,25 +45,32 @@ service.authorization = authorize
 # https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
 spreadsheet_id = "18zi9WL17Z94QdLoaCIVZLtoRXtoxj8O7bXqcfkkXu0s"
 
-# #create columns for first name and last name
-# range = "Sheet1!G1:I1"
-# request_body = Google::Apis::SheetsV4::ValueRange.new
-# request_body.range = range;
-# request_body.values = [["First Name", "Last Name", "Velocify Status"]]
-# response = service.update_spreadsheet_value spreadsheet_id, range, request_body, value_input_option: "USER_ENTERED"
-# puts response
-# range = "Sheet1!A2:A"
-# response = service.get_spreadsheet_values spreadsheet_id, range
-# puts "Name, Date:"
-# puts "No data found." if response.values.empty?
-# #puts response.values
-# response.values.each do |row|
-#   # Split full name value into two values
-#   full_name = row[0].split(", ")
-#   first_name = full_name[1]
-#   last_name = full_name[0]
-#   index = response.values.index(row)
-#   rowIndex = index + 2;
+def write_values (range, values, service, spreadsheet_id)
+    request_body2 = Google::Apis::SheetsV4::ValueRange.new
+    request_body2.range = range
+    request_body2.values = values
+    response2 = service.update_spreadsheet_value spreadsheet_id, range, request_body2, value_input_option: "USER_ENTERED"
+end
+
+#create columns for first name and last name
+range = "Sheet1!G1:I1"
+request_body = Google::Apis::SheetsV4::ValueRange.new
+request_body.range = range;
+request_body.values = [["First Name", "Last Name", "Velocify Status"]]
+response = service.update_spreadsheet_value spreadsheet_id, range, request_body, value_input_option: "USER_ENTERED"
+puts response
+range = "Sheet1!A2:A"
+response = service.get_spreadsheet_values spreadsheet_id, range
+puts "No data found." if response.values.empty?
+#puts response.values
+values = []
+response.values.each do |row|
+  # Split full name value into two values
+  full_name = row[0].split(", ")
+  first_name = full_name[1]
+  last_name = full_name[0]
+  index = response.values.index(row)
+  rowIndex = index + 2;
 
   #Update columns
 #   request_body2 = Google::Apis::SheetsV4::ValueRange.new
@@ -71,7 +78,14 @@ spreadsheet_id = "18zi9WL17Z94QdLoaCIVZLtoRXtoxj8O7bXqcfkkXu0s"
 #   request_body2.range = range2
 #   request_body2.values = [[first_name, last_name]]
 #   response2 = service.update_spreadsheet_value spreadsheet_id, range2, request_body2, value_input_option: "USER_ENTERED"
-# end
+    name_array = []
+    name_array.push(first_name)
+    name_array.push(last_name)
+    values.push(name_array)
+end
+puts values.inspect
+write_values("Sheet1!G2:H", values, service, spreadsheet_id)
+
 
 # Compare first and last name columns to Velocify Report
 

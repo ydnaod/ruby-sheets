@@ -73,11 +73,6 @@ response.values.each do |row|
   rowIndex = index + 2;
 
   #Update columns
-#   request_body2 = Google::Apis::SheetsV4::ValueRange.new
-#   range2 = "Sheet1!G#{rowIndex}:H#{rowIndex}"
-#   request_body2.range = range2
-#   request_body2.values = [[first_name, last_name]]
-#   response2 = service.update_spreadsheet_value spreadsheet_id, range2, request_body2, value_input_option: "USER_ENTERED"
     name_array = []
     name_array.push(first_name)
     name_array.push(last_name)
@@ -97,6 +92,7 @@ velocify_response = service.get_spreadsheet_values velocify_spreadsheet_id, velo
 #Freedom
 range = "Sheet1!G2:I"
 response = service.get_spreadsheet_values spreadsheet_id, range
+values = []
 response.values.each do |row|
     first_name = row[0]
     last_name = row[1]
@@ -109,28 +105,19 @@ response.values.each do |row|
         row[0] = "" unless row[0]
         row[1] = "" unless row[1]
         if row[0].casecmp(first_name) == 0 && row[1].casecmp(last_name) == 0
-            request_body2 = Google::Apis::SheetsV4::ValueRange.new
-            range2 = "Sheet1!I#{rowIndex}"
-            request_body2.range = range2
             status = original_status ? original_status : row[2]
             if original_status != nil
-                request_body2.values = [[original_status + ", " + row[2]]]
+                values[index] = [original_status + ", " + row[2]]
             else
-                request_body2.values = [[row[2]]]
+                values[index] = [row[2]]
                 original_status = row[2]
             end
-            response2 = service.update_spreadsheet_value spreadsheet_id, range2, request_body2, value_input_option: "USER_ENTERED"
-            puts row[0] + row[1]
             found = true
             next
         end
-        #puts row[0] + row[1]
     end
     if found == false
-        request_body2 = Google::Apis::SheetsV4::ValueRange.new
-        range2 = "Sheet1!I#{rowIndex}"
-        request_body2.range = range2
-        request_body2.values = [["N/A"]]
-        response2 = service.update_spreadsheet_value spreadsheet_id, range2, request_body2, value_input_option: "USER_ENTERED"
+        values[index] = ["N/A"]
     end
 end
+write_values("Sheet1!I2:I", values, service, spreadsheet_id)

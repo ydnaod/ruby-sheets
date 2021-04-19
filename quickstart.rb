@@ -41,24 +41,24 @@ service = Google::Apis::SheetsV4::SheetsService.new
 service.client_options.application_name = APPLICATION_NAME
 service.authorization = authorize
 
-# Prints the names and majors of students in a sample spreadsheet:
-# https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+# Stroudsburg
 spreadsheet_id = "18zi9WL17Z94QdLoaCIVZLtoRXtoxj8O7bXqcfkkXu0s"
 
 def write_values (range, values, service, spreadsheet_id)
     request_body2 = Google::Apis::SheetsV4::ValueRange.new
     request_body2.range = range
     request_body2.values = values
+    # puts values.inspect
     response2 = service.update_spreadsheet_value spreadsheet_id, range, request_body2, value_input_option: "USER_ENTERED"
 end
 
 #create columns for first name and last name
-range = "Sheet1!G1:I1"
+range = "Sheet1!G1:K1"
 request_body = Google::Apis::SheetsV4::ValueRange.new
 request_body.range = range;
-request_body.values = [["First Name", "Last Name", "Velocify Status"]]
+request_body.values = [["First Name", "Last Name", "Velocify Status", "", "Lead Source"]]
 response = service.update_spreadsheet_value spreadsheet_id, range, request_body, value_input_option: "USER_ENTERED"
-puts response
+# puts response
 range = "Sheet1!A2:A"
 response = service.get_spreadsheet_values spreadsheet_id, range
 puts "No data found." if response.values.empty?
@@ -78,25 +78,28 @@ response.values.each do |row|
     name_array.push(last_name)
     values.push(name_array)
 end
-puts values.inspect
+# puts values.inspect
 write_values("Sheet1!G2:H", values, service, spreadsheet_id)
 
 
 # Compare first and last name columns to Velocify Report
 
 # velocify
-velocify_spreadsheet_id = "11Y_L2Fkh05jZXeR5LSX3UWkgK9AfWF6vRTbQX9cegCA"
-velocify_range = "Sheet1!C2:E"
+velocify_spreadsheet_id = "1_XiOlMEypPgXXVw0VgEA-0veF4t73qRkjM7bgRX26wE"
+velocify_range = "Sheet1!C2:H"
 velocify_response = service.get_spreadsheet_values velocify_spreadsheet_id, velocify_range
 
 #Freedom
-range = "Sheet1!G2:I"
+range = "Sheet1!G2:K"
 response = service.get_spreadsheet_values spreadsheet_id, range
 values = []
+lead_sources = [];
 response.values.each do |row|
     first_name = row[0]
     last_name = row[1]
     original_status = row[2];
+
+    original_lead_source = row[4];
     index = response.values.index(row)
     rowIndex = index + 2;
     found = false
@@ -106,18 +109,34 @@ response.values.each do |row|
         row[1] = "" unless row[1]
         if row[0].casecmp(first_name) == 0 && row[1].casecmp(last_name) == 0
             status = original_status ? original_status : row[2]
+
             if original_status != nil
-                values[index] = [original_status + ", " + row[2]]
+                temp_string = original_status + ", " + row[2]
+                values[index] = [temp_string]
+                original_status = temp_string
             else
                 values[index] = [row[2]]
                 original_status = row[2]
             end
+
+            if original_lead_source != nil
+                temp_string = original_lead_source + ', ' + row[5]
+                lead_sources[index] = [temp_string]
+                original_lead_source = temp_string
+            else
+                lead_sources[index] = [row[5]]
+                original_lead_source = row[5]
+            end
+            
             found = true
             next
         end
     end
     if found == false
         values[index] = ["N/A"]
+        lead_sources[index] = ["N/A"]
     end
 end
+puts lead_sources.inspect
 write_values("Sheet1!I2:I", values, service, spreadsheet_id)
+write_values("Sheet1!K2:K", lead_sources, service, spreadsheet_id)
